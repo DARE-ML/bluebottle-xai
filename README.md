@@ -14,11 +14,15 @@ The repository includes three main folders that organise the projects's codebase
 2. **Model_Training**
    
   This folder includes the python scripts for the data analysis, Discretization and Modelling:
-  * Exploratory_analysis.py: Performs data analysis witht the code modularized into functions for clarity.
-  * CT-GAN_SVM.py: Generates synthetic negative classes using CT-GAN and includes a function for One-Class SVM modeling.
-  * discretizer.py: Converts continuous variables into discrete categories to identify subfeatures contributing to bluebottle presence.
-  * Model_bluebottledata.py: Implements the entire training pipeline using various augmentatio techniques and a baseline without augmentation. 
-  * packages.py: Lists all the packages utilized in the study.
+  * `Exploratory_analysis.py`: Performs data analysis witht the code modularized into functions for clarity.
+    
+  * `CT-GAN_SVM.py`: Generates synthetic negative classes using CT-GAN and includes a function for One-Class SVM modeling.
+    
+  * `discretizer.py`: Converts continuous variables into discrete categories to identify subfeatures contributing to bluebottle presence.
+    
+  * `Model_bluebottledata.py`: Implements the entire training pipeline using various augmentatio techniques and a baseline without augmentation.
+    
+  * `packages.py`: Lists all the packages utilized in the study.
 
 3. **Plots**
    
