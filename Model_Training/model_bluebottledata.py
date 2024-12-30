@@ -26,7 +26,7 @@ def split_data(data, selected_features, run, augment=False, normalize=True):
         raise ValueError("selected_features should be 'yes' or a list of feature names.")
         
     y = data['Presence']
-    continuous_vars = ['SST', 'WD_Dir', 'WD_Speed', 'Curr_Dir', 'Curr_Speed']
+    continuous_vars = ['SST','Current Speed','Current Direction','Wind Speed','Wind Direction']
     discrete_vars = [col for col in X.columns if col not in continuous_vars]
     
     # Train-test split
@@ -51,7 +51,7 @@ def split_data(data, selected_features, run, augment=False, normalize=True):
         X_train, y_train = pipeline.fit_resample(X_train, y_train)
         smote_data = pd.concat([X_train, y_train.reset_index(drop=True)], axis=1)
     
-    return X_train, X_test, y_train, y_test, continuous_vars, smote_data
+    return X, y, X_train, X_test, y_train, y_test, continuous_vars, smote_data
 
 def evaluate_model(model, X_train, y_train, X_test, y_test):
     y_train_pred = model.predict(X_train)
@@ -101,7 +101,7 @@ def train_classifiers(X_train, y_train, X_test, y_test, run, aggregate_metrics, 
         all_models = {
         'mlp': MLPClassifier(hidden_layer_sizes=(100,), learning_rate_init=0.1, solver='adam', max_iter=400, alpha=0.0001,early_stopping=True, random_state=run),
         'rf': RandomForestClassifier(bootstrap=False, max_depth=7, min_samples_split=10, max_features='log2', n_estimators=150, min_samples_leaf=2, max_leaf_nodes=20, ccp_alpha=0.01, random_state=run),
-        'xgb': xgb.XGBClassifier(learning_rate=0.1, max_depth=1, n_estimators=100, min_child_weight=1, scale_pos_weight=3, use_label_encoder=False, eval_metric='logloss')
+        'xgb': xgb.XGBClassifier(learning_rate=0.1, max_depth=2, n_estimators=100, min_child_weight=1, scale_pos_weight=3, use_label_encoder=False, eval_metric='logloss')
     }
     else:
         all_models = {
@@ -148,12 +148,12 @@ def plot_metrics(best_models, all_models, X_train):
         plt.plot(fpr_train, tpr_train, color='blue', lw=2, label=f"Train ROC (AUC = {roc_auc_score(best_model['y_train'], best_model['y_train_prob']):.2f})")
         plt.plot(fpr_test, tpr_test, color='orange', lw=2, label=f"Test ROC (AUC = {best_model['auc']:.2f})")
         plt.plot([0, 1], [0, 1], color='gray', linestyle='--')
-        plt.xlabel("False Positive Rate")
-        plt.ylabel("True Positive Rate")
-        plt.xticks(fontsize=16, color='black')
-        plt.yticks(fontsize=16, color='black')
-        plt.title(f"ROC Curve for Best {model_name.upper()} Model")
-        plt.legend(loc="lower right")
+        plt.xlabel("False Positive Rate", fontsize=22, color='black' )
+        plt.ylabel("True Positive Rate", fontsize=22, color='black')
+        plt.xticks(fontsize=20, color='black')
+        plt.yticks(fontsize=20, color='black')
+        #;plt.title(f"ROC Curve for Best {model_name.upper()} Model")
+        plt.legend(loc="lower right", fontsize=20)
         plt.savefig(f'model_{model_name}_Bluebottle_ROC Curve.svg')
         plt.show()
 
@@ -163,13 +163,11 @@ def plot_metrics(best_models, all_models, X_train):
         plt.figure(figsize=(12, 6))
         plt.plot(recall_train, precision_train, color='blue', lw=2, label="Train Precision-Recall curve")
         plt.plot(recall_test, precision_test, color='orange', lw=2, label="Test Precision-Recall curve")
-        plt.xlabel("Recall", fontsize=16, color='black')
-        plt.ylabel("Precision", fontsize=16, color='black')
-        plt.xticks(fontsize=16, color='black')
-        plt.yticks(fontsize=16, color='black')
-        plt.xticks(fontsize=16, color='black')
-        plt.yticks(fontsize=16, color='black')
-        plt.title(f"Precision-Recall Curve for Best {model_name.upper()} Model", fontsize = 18, color='black')
+        plt.xlabel("Recall", fontsize=22, color='black')
+        plt.ylabel("Precision", fontsize=22, color='black')
+        plt.xticks(fontsize=20, color='black')
+        plt.yticks(fontsize=20, color='black')
+        #plt.title(f"Precision-Recall Curve for Best {model_name.upper()} Model", fontsize = 18, color='black')
         plt.legend(loc="lower left")
         plt.savefig(f'model_{model_name}_Blue_Precision-Recall Curve.svg')
         plt.show()
@@ -185,26 +183,45 @@ def plot_metrics(best_models, all_models, X_train):
     # Create a bar plot with features on the x-axis
             plt.figure(figsize=(15, 8))  # Adjusting the width to accommodate long feature names
             plt.bar(sorted_features, sorted_importances, color='skyblue')
-            plt.ylabel('Feature Importance', fontsize=16, color = 'black') 
-            plt.xlabel('Features', fontsize=16, color = 'black') 
-            plt.title(f'Feature Importance in {model_name.upper()}', fontsize = 18,  color = 'black') 
+            plt.ylabel('Feature Importance', fontsize=22, color = 'black') 
+            plt.xlabel('Features', fontsize=22, color = 'black') 
+            #plt.title(f'Feature Importance in {model_name.upper()}', fontsize = 18,  color = 'black') 
             # Rotate the feature labels for better readability
-            plt.xticks(rotation=90, fontsize=16)
-            plt.yticks(fontsize=16)
+            plt.xticks(rotation=90, fontsize=20)
+            plt.yticks(fontsize=20)
             plt.tick_params(axis='both', colors='black')
             plt.tight_layout()  
             plt.savefig(f'model_{model_name}_feature_importance.svg')
             plt.show()
+
+def PCA_analysis(X, y):
+    continuous_vars = ['SST','Current Speed','Current Direction','Wind Speed','Wind Direction']
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X[continuous_vars])
+    pca = PCA(n_components=0.95)
+    X_pca = pca.fit_transform(X_scaled)
+    plt.figure(figsize=(12, 6))
+    plt.scatter(X_pca[y == 0, 0], X_pca[y == 0, 1], c='blue', label='Class 0 (Absence)', edgecolor='k', s=30)
+    plt.scatter(X_pca[y == 1, 0], X_pca[y == 1, 1], c='red', label='Class 1 (Presence)', edgecolor='k', s=30)
+    #plt.title("PCA Result (first two principal components)")
+    plt.xlabel("Principal Component 1", fontsize=22, color='black')
+    plt.ylabel("Principal Component 2", fontsize=22, color='black')
+    plt.xticks(fontsize=20, color='black')
+    plt.yticks(fontsize=20, color='black')
+    plt.legend(title='Class', bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=18, title_fontsize=20)
+    plt.show()
+
+
 def main():
     runs = 30
     selected_features = 'yes'
-    X_selected = ['SST', 'Curr_Speed', 'Curr_Dir', 'WD_Speed', 'WD_Dir', 'Month_Jan', 'Month_Feb', 'Month_Dec', 'Month_Oct']
+    X_selected = ['SST','Current Speed','Current Direction','Wind Speed','Wind Direction', 'January', 'February', 'December', 'October']
     aggregate_metrics_all_runs = {model: {'Train Accuracy': [], 'Train F1 Score': [], 'Train AUC': [], 
                                           'Test Accuracy': [], 'Test F1 Score': [], 'Test AUC': []} 
                                   for model in ['mlp', 'rf', 'xgb']}
+    data = read_data('bluebottle', sample = True)
     for run in range(runs):
-        data = read_data('bluebottle', sample = True)
-        X_train, X_test, y_train, y_test, continuous_var, smote_data = split_data(data, selected_features=X_selected, run = run, augment=False)
+        X, y, X_train, X_test, y_train, y_test, continuous_var, smote_data = split_data(data, selected_features=X_selected, run = run, augment=False)
         best_models, all_models, model_metrics_dict = train_classifiers(X_train, y_train, X_test, y_test, run, aggregate_metrics_all_runs, model_gan=True)
         if run == runs - 1:
             for model_name, metrics in model_metrics_dict.items():
@@ -224,8 +241,8 @@ def main():
                 print("Classification Report (Test):")
                 test_report = pd.DataFrame(metrics['Classification Report Test']).transpose()
                 print(test_report.applymap(lambda x: f"{x:.4f}" if isinstance(x, (int, float)) else x))
-            continuous_analysis(data = data, continuous_vars = continuous_var)
-    
+    continuous_analysis(data = data, continuous_vars = continuous_var)
+    histogram_plot(data, continuous_var)
     for model_name, metrics in aggregate_metrics_all_runs.items():
         print(f"Model: {model_name}")
         for metric, values in metrics.items():
@@ -233,6 +250,7 @@ def main():
             std_val = np.std(values)
             print(f"{metric}: Mean = {mean_val:.4f}, Std = {std_val:.4f}")    
     plot_metrics(best_models, all_models, X_train)
+    PCA_analysis(X, y)
 
 if __name__ == "__main__":
     main()

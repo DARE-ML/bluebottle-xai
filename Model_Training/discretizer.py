@@ -2,13 +2,9 @@ from packages import *
 from model_bluebottledata import *
 
 def discretize(data):
-    noncircular_vars = ['SST', 'Curr_Speed', 'WD_Speed']
-    circular_vars = ['Curr_Dir', 'WD_Dir']
-    selected_features = [
-        'SST', 'Curr_Speed', 'Curr_Dir', 'WD_Speed', 'WD_Dir', 
-        'Month_Jan', 'Month_Feb', 'Month_Dec', 'Month_Oct', 'Month_Nov', 
-        'Month_Sep', 'Month_Mar', 'Month_Apr', 'Presence'
-    ]
+    noncircular_vars = ['SST', 'Current Speed', 'Wind Speed']
+    circular_vars = ['Current Direction', 'Wind Direction']
+    selected_features = ['SST', 'Current Speed','Current Direction','Wind Speed','Wind Direction', 'January', 'February', 'December', 'October', 'Presence']
     data_selected = data[selected_features]
 
     # Discretize continuous variables
@@ -42,7 +38,7 @@ def discretize(data):
         data3[column] = data3[column].map(lambda x: circular_labels[x])
 
     # One-hot encode categorical variables
-    new_cat = ['Month', 'SST', 'Curr_Speed', 'Curr_Dir', 'WD_Speed', 'WD_Dir']
+    new_cat = ['SST', 'Current Speed','Current Direction','Wind Speed','Wind Direction']
     new_cat = [col for col in new_cat if col in data3.columns]
     encoder = OneHotEncoder()
     encoded_df = encoder.fit_transform(data3[new_cat])
@@ -57,18 +53,16 @@ def discretize(data):
 
 def main():
     data = pd.read_csv('CTGAN_data.csv')
+    new_data = discretize(data)
     selected_features = 'yes'
     runs = 30
     aggregate_metrics_all_runs = {
         model: {'Train Accuracy': [], 'Train F1 Score': [], 'Train AUC': [], 
                 'Test Accuracy': [], 'Test F1 Score': [], 'Test AUC': []} 
-        for model in ['mlp', 'rf', 'xgb']
-    }
-    for run in range(runs):
-        new_data = discretize(data)
-        
+        for model in ['mlp', 'rf', 'xgb']}
+    for run in range(runs): 
         # Split data and check for potential None values
-        X_train, X_test, y_train, y_test, continuous_vars, smote_data = split_data(new_data, selected_features=selected_features, run=run, augment=False, normalize=False)
+        X, y, X_train, X_test, y_train, y_test, continuous_var, smote_data = split_data(new_data, selected_features=selected_features, run=run, augment=False, normalize=False)
         
         best_models, all_models, model_metrics_dict = train_classifiers(X_train, y_train, X_test, y_test, run, aggregate_metrics_all_runs, model_gan=True)
         

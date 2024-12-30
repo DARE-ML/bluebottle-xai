@@ -21,3 +21,6 @@ from sklearn.utils import resample
 from sklearn.model_selection import StratifiedKFold
 from ctgan import CTGAN
 from sklearn.preprocessing import KBinsDiscretizer
+import geopandas as gpd
+import contextily as ctx
+from sklearn.decomposition import PCA

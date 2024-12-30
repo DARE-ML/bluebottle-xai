@@ -1,4 +1,4 @@
-Date,Beach,Presence,Council_Report,Beach_Key,Surf_Club,slsa_branch,state,Lat,Lon,Length,Orient,Embayment,SST,Curr_Speed,Curr_Dir,WD_Speed,WD_Dir
+Date,Beach,Presence,Council_Report,Beach_Key,Surf_Club,slsa_branch,state,Lat,Lon,Length,Orient,Embayment,SST,Current Speed,Current Direction,Wind Speed,Wind Direction
 3/02/2016,Maroubra ,0,res_none,nsw327A,Maroubra SLSC,Sydney Inc.,NSW,-33.9484,151.2569,500,107,0.7,23.77483464,0.298972534,6.152887982,6.628553417,19.75905939
 3/03/2016,Maroubra ,0,res_none,nsw327A,Maroubra SLSC,Sydney Inc.,NSW,-33.9484,151.2569,500,107,0.7,23.75148798,0.555698398,6.812780859,9.317734626,22.7559782
 3/04/2016,Maroubra ,0,res_none,nsw327A,Maroubra SLSC,Sydney Inc.,NSW,-33.9484,151.2569,500,107,0.7,23.01217709,0.514176659,1.768666345,8.408741862,29.53029137
